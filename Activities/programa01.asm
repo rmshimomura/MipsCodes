@@ -30,6 +30,7 @@ somador:
 	j loop_soma
 
 erro_input:
+
 	li $v0, 4 # Código syscall para imprimir strings
 	la $a0, msg2 # "O valor digitado N tem que ser maior que 1.\n"
 	syscall

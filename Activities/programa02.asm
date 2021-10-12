@@ -26,40 +26,39 @@ main:
 		beq $s0, 1, soma_negativo
 		j soma_positivo
 		
-	
 soma_negativo:
 	
-	add $t7, $t7, $t3
-	addi $t1, $t1, 4
-	addi $t2, $t2, 1
+	add $t7, $t7, $t3 # Adiciona o valor à soma dos negativos
+	addi $t1, $t1, 4 # Vai para a próxima posição do vetor
+	addi $t2, $t2, 1 # Incrementa contador
 	j loop
 	
 soma_positivo:
 	
-	add $t6, $t6, $t3
-	addi $t1, $t1, 4
-	addi $t2, $t2, 1
+	add $t6, $t6, $t3 # Adiciona o valor à soma dos positivos
+	addi $t1, $t1, 4 # Vai para a próxima posição do vetor
+	addi $t2, $t2, 1 # Incrementa contador
 	j loop
 			
 exit: 
-		li $v0, 4 # Código syscall para imprimir strings
-		la $a0, msg1 # "A soma dos valores positivos = "
-		syscall
-		li $v0, 1 # Código syscall para escrever inteiros
-		add $a0, $zero, $t6 
-		syscall
-		li $v0, 4 # Código syscall para imprimir strings
-		la $a0, msg3
-		syscall
-		li $v0, 4 # Código syscall para imprimir strings
-		la $a0, msg2 # "A soma dos valores negativos = "
-		syscall
-		li $v0, 1 # Código syscall para escrever inteiros
-		add $a0, $zero, $t7
-		syscall
-		li $v0, 4 # Código syscall para imprimir strings
-		la $a0, msg3
-		syscall
-		li $v0, 10
-		syscall
+	li $v0, 4 # Código syscall para imprimir strings
+	la $a0, msg1 # "A soma dos valores positivos = "
+	syscall
+	li $v0, 1 # Código syscall para escrever inteiros
+	add $a0, $zero, $t6 # Mostra valor da soma dos positivos
+	syscall
+	li $v0, 4 # Código syscall para imprimir strings
+	la $a0, msg3
+	syscall
+	li $v0, 4 # Código syscall para imprimir strings
+	la $a0, msg2 # "A soma dos valores negativos = "
+	syscall
+	li $v0, 1 # Código syscall para escrever inteiros
+	add $a0, $zero, $t7 # Mostra valor da soma dos negativos
+	syscall
+	li $v0, 4 # Código syscall para imprimir strings
+	la $a0, msg3
+	syscall
+	li $v0, 10
+	syscall
 	
