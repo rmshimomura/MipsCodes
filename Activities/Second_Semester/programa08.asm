@@ -3,21 +3,24 @@ msgTamanho: .asciiz "Insira o tamanho do vetor:"
 msgInserirValores1: .asciiz "Insira o valor de Vet["
 msgInserirValores2: .asciiz "]:"
 msgSomaElementosPares: .asciiz "Soma dos elementos pares: "
-
+msgNumeroMaiorMenor: .asciiz "Numero de elementos k < vet[i] < 2k: "
+msgValorK: .asciiz "Insira o valor K: "
 pulaLinha: .asciiz "\n"
 
 .text
 
 main:
 	jal tamanho_vetor
-	jal sort
-	jal escrita
-	jal somarPares
+	jal sort # A
+	jal escrita 
+	jal somarPares # B
+	jal maior_menor # C
 	
 	li $v0, 10
 	syscall
 	
 tamanho_vetor:
+
 	la $a0, msgTamanho
 	li $v0, 4
 	syscall
@@ -58,6 +61,7 @@ leitura_vetor:
 	move $v0, $s0
 	jr $ra
 
+# Letra A
 sort: 
 
 loopFora:
@@ -95,6 +99,7 @@ loop:  # Loop da escrita
 	move $v0, $s0
 	jr $ra
 
+# Letra B
 somarPares:
 
 	li $t2, 0 # Reseta para ser o contador
@@ -123,6 +128,67 @@ resultadoPares:
 	li $v0, 4
 	syscall
 	la $a0, msgSomaElementosPares
+	li $v0, 4
+	syscall
+	la $a0, ($s4)
+	li $v0, 1
+	syscall
+	la $a0, pulaLinha
+	li $v0, 4
+	syscall
+	jr $ra
+
+# Letra C
+
+maior_menor:
+	add $s4, $zero, $zero # Reseta o numero de valores maiores que K e menores que 2k
+	li $t2, 0 # Reseta para ser o contador
+	move $s2, $s0 # $s2 vai ser o runner
+	la $a0, msgValorK
+	li $v0, 4
+	syscall
+	li $v0, 5
+	syscall
+	add $t5, $zero, $v0 # $t5 = K
+	mul $t6, $v0, 2    # $t6 = 2K
+	j loop_maior_menor
+
+loop_maior_menor:
+	
+	lw $t4, ($s2) # Carrega em $t4, o valor do endereco $s2
+	
+	sgt $t8, $t4, $t5 # vet[i] > k
+	slt $t9, $t4, $t6 # vet[i] < 2k
+	
+	beqz $t8, return 
+	beqz $t9, return
+	
+	add $s4, $s4, 1 
+	add $s2, $s2, -4
+	addi $t2, $t2, 1
+	blt $t2, $s7, loop_maior_menor
+	move $v0, $s0
+	
+	la $a0, msgNumeroMaiorMenor
+	li $v0, 4
+	syscall
+	la $a0, ($s4)
+	li $v0, 1
+	syscall
+	la $a0, pulaLinha
+	li $v0, 4
+	syscall
+	jr $ra
+	jr $ra
+
+return:
+
+	add $s2, $s2, -4
+	addi $t2, $t2, 1
+	blt $t2, $s7, loop_maior_menor
+	move $v0, $s0
+
+	la $a0, msgNumeroMaiorMenor
 	li $v0, 4
 	syscall
 	la $a0, ($s4)
