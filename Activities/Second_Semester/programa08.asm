@@ -4,6 +4,7 @@ msgInserirValores1: .asciiz "Insira o valor de Vet["
 msgInserirValores2: .asciiz "]:"
 msgSomaElementosPares: .asciiz "Soma dos elementos pares: "
 msgNumeroMaiorMenor: .asciiz "Numero de elementos k < vet[i] < 2k: "
+msgNumeroIgual: .asciiz "Numero de elementos iguais a k: "
 msgValorK: .asciiz "Insira o valor K: "
 pulaLinha: .asciiz "\n"
 
@@ -15,6 +16,7 @@ main:
 	jal escrita 
 	jal somarPares # B
 	jal maior_menor # C
+	jal iguais # D
 	
 	li $v0, 10
 	syscall
@@ -163,7 +165,7 @@ loop_maior_menor:
 	beqz $t8, return 
 	beqz $t9, return
 	
-	add $s4, $s4, 1 
+	add $s4, $s4, 1 # S4 = numero de [k < valor < 2k]
 	add $s2, $s2, -4
 	addi $t2, $t2, 1
 	blt $t2, $s7, loop_maior_menor
@@ -179,12 +181,11 @@ loop_maior_menor:
 	li $v0, 4
 	syscall
 	jr $ra
-	jr $ra
 
 return:
 
 	add $s2, $s2, -4
-	addi $t2, $t2, 1
+	addi $t2, $t2, 1 
 	blt $t2, $s7, loop_maior_menor
 	move $v0, $s0
 
@@ -198,3 +199,59 @@ return:
 	li $v0, 4
 	syscall
 	jr $ra
+	
+iguais:
+	add $s4, $zero, $zero # Reseta o numero de valores iguais a K
+	li $t2, 0 # Reseta para ser o contador
+	move $s2, $s0 # $s2 vai ser o runner
+	la $a0, msgValorK
+	li $v0, 4
+	syscall
+	li $v0, 5
+	syscall
+	add $t5, $zero, $v0 # $t5 = K
+	j loop_iguais
+
+loop_iguais:
+
+	lw $t4, ($s2) # Carrega em $t4, o valor do endereco $s2
+	
+	seq $t8, $t4, $t5 # vet[i] == k
+	
+	beq $t8, 1, adicionar_igual
+	
+	add $s2, $s2, -4 # Andar endereco
+	addi $t2, $t2, 1 # Andar contador 
+	blt $t2, $s7, loop_iguais
+	
+	move $v0, $s0
+	la $a0, msgNumeroIgual
+	li $v0, 4
+	syscall
+	la $a0, ($s4)
+	li $v0, 1
+	syscall
+	la $a0, pulaLinha
+	li $v0, 4
+	syscall
+	jr $ra
+	
+	
+adicionar_igual:
+
+	add $s4, $s4, 1  # Aumentar numero de iguais
+	add $s2, $s2, -4 # Andar endereco
+	addi $t2, $t2, 1 # Andar contador 
+	blt $t2, $s7, loop_iguais
+	move $v0, $s0
+	la $a0, msgNumeroIgual
+	li $v0, 4
+	syscall
+	la $a0, ($s4)
+	li $v0, 1
+	syscall
+	la $a0, pulaLinha
+	li $v0, 4
+	syscall
+	jr $ra
+	
