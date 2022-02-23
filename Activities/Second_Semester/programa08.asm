@@ -1,22 +1,24 @@
 .data
 msgTamanho: .asciiz "Insira o tamanho do vetor:"
-msgInserirValores1: .asciiz "Insira o valor de Vet["
+msgInserirValores1: .asciiz "Insira o valor (inteiro!) de Vet["
 msgInserirValores2: .asciiz "]:"
+msgZeroErro: .asciiz "O valor informado deve ser maior do que 0!\n\n"
 msgSomaElementosPares: .asciiz "Soma dos elementos pares: "
 msgNumeroMaiorMenor: .asciiz "Numero de elementos k < vet[i] < 2k: "
 msgNumeroIgual: .asciiz "Numero de elementos iguais a k: "
 msgValorK: .asciiz "Insira o valor K: "
 pulaLinha: .asciiz "\n"
+msgOrdenado: .asciiz "Vetor esta organizado!\n"
 
 .text
 
 main:
 	jal tamanho_vetor
-	jal sort # A
+	jal sort			
 	jal escrita 
-	jal somarPares # B
-	jal maior_menor # C
-	jal iguais # D
+	jal somarPares 			
+	jal maior_menor 		
+	jal iguais 			
 	
 	li $v0, 10
 	syscall
@@ -28,17 +30,25 @@ tamanho_vetor:
 	syscall
 	li $v0, 5
 	syscall
-	add $s7, $v0, $zero # $s7 vai segurar o valor do tamanho do vetor
+	ble $v0, $zero, erroInput 	# Se o input for menor ou igual a 0, repita o procedimento até receber um input válido
+	add $s7, $v0, $zero 		# $s7 vai segurar o valor do tamanho do vetor
 	add $k1, $zero, -4
-	mul $k0, $k1, $s7 # $k0 vai segurar a quantidade de bytes a serem guardados para o vetor todo
+	mul $k0, $k1, $s7 		# $k0 vai segurar a quantidade de bytes a serem guardados para o vetor todo
 	
 	j adicionar_espaco
 	
+erroInput:
+	
+	li $v0, 4 			# Imprimir strings
+	la $a0, msgZeroErro 		# Mensagem de erro N <= 0
+	syscall
+	j tamanho_vetor
+	
 adicionar_espaco:
 
-	move $s0, $sp # $s0 = comeco do vetor
-	add $sp, $sp, $k0 # espaco adicionado "subtraido"
-	move $s1, $sp # $s1 = final do vetor
+	move $s0, $sp 			# $s0 = comeco do vetor
+	add $sp, $sp, $k0 		# espaco adicionado "subtraido"
+	move $s1, $sp 			# $s1 = final do vetor
 	li $t2, 0
 	move $s2, $s0
 
@@ -58,37 +68,44 @@ leitura_vetor:
 	
 	sw $v0, ($s2)
 	add $s2, $s2, -4
-	addi $t2, $t2, 1 # Contador
+	addi $t2, $t2, 1 		# Contador
 	blt $t2, $s7, leitura_vetor 
 	move $v0, $s0
 	jr $ra
 
-# Letra A
 sort: 
+
+	beq $s7, 1, return_sort
+	
+	return_sort:
+		li $v0, 4 			# Imprimir strings
+		la $a0, msgOrdenado 		# Mensagem de erro N <= 0
+		syscall 
+		jr $ra
 
 loopFora:
 	add $t1, $zero, $zero
-	la  $a0, ($s0) # $a0 esta no comeco do vetor
+	la  $a0, ($s0) 			# $a0 esta no comeco do vetor
 	
 loopDentro:
-	lw  $t2, 0($a0)         # $t2 = elemento atual
-	lw  $t3, -4($a0)         # $t3 = proximo elemento
-    	slt $t5, $t3, $t2       # $t5 = 1 se $t3 < $t2
-    	beq $t5, $zero, continuar   # Se $t5 = 1, troca os valores
-    	add $t1, $zero, 1          # Checar novamente
-    	sw  $t2, -4($a0)         # Trocar
-    	sw  $t3, 0($a0)		# Trocar
+	lw  $t2, 0($a0)         	# $t2 = elemento atual
+	lw  $t3, -4($a0)         	# $t3 = proximo elemento
+    	slt $t5, $t3, $t2       	# $t5 = 1 se $t3 < $t2
+    	beq $t5, $zero, continuar   	# Se $t5 = 1, troca os valores
+    	add $t1, $zero, 1          	# Checar novamente
+    	sw  $t2, -4($a0)         	# Trocar
+    	sw  $t3, 0($a0)			# Trocar
 continuar:
-	addi $a0, $a0, -4            # Proximo elemento
-	addi $a1, $a0, -4	     # Proximo do proximo elemento
-	bne  $a1, $s1, loopDentro    # Se o proximo elemento nao for o final, volta para o loop dentro
-	bne  $t1, $zero, loopFora    # Se $t1 = 1, volte para o loopFora
+	addi $a0, $a0, -4            	# Proximo elemento
+	addi $a1, $a0, -4	     	# Proximo do proximo elemento
+	bne  $a1, $s1, loopDentro    	# Se o proximo elemento nao for o final, volta para o loop dentro
+	bne  $t1, $zero, loopFora    	# Se $t1 = 1, volte para o loopFora
 	jr $ra
 
 escrita:
-	li $t2, 0 # Reseta para ser o contador
-	move $s2, $s0 # $s2 vai ser o runner
-loop:  # Loop da escrita
+	li $t2, 0 			# Reseta para ser o contador
+	move $s2, $s0 			# $s2 vai ser o runner
+loop:  					# Loop da escrita
 	lw $a0, ($s2) 
 	li $v0, 1
 	syscall
@@ -101,28 +118,27 @@ loop:  # Loop da escrita
 	move $v0, $s0
 	jr $ra
 
-# Letra B
 somarPares:
 
-	li $t2, 0 # Reseta para ser o contador
-	move $s2, $s0 # $s2 vai ser o runner
+	li $t2, 0 			# Reseta para ser o contador
+	move $s2, $s0 			# $s2 vai ser o runner
 	add $t3, $zero, 2
 
 somarParesLoop:
-	lw $t4, ($s2) # Carrega em $t4, o valor do endereco $s2
-	div $t4, $t3 # Divide $t4 por $t3
-	mfhi $s3 # Resto da divisao vai para $s3
-	beq $s3, 0, soma # Se o resto for igual a zero, entao o numero eh par
-	add $s2, $s2, -4 # Proximo elemento do vetor
-	addi $t2, $t2, 1 # Contador
+	lw $t4, ($s2) 			# Carrega em $t4, o valor do endereco $s2
+	div $t4, $t3 			# Divide $t4 por $t3
+	mfhi $s3 			# Resto da divisao vai para $s3
+	beq $s3, 0, soma 		# Se o resto for igual a zero, entao o numero eh par
+	add $s2, $s2, -4 		# Proximo elemento do vetor
+	addi $t2, $t2, 1 		# Contador
 	blt $t2, $s7, somarParesLoop
 	move $v0, $s0
 	j resultadoPares
 	
 soma: 
 	add $s4, $s4, $t4
-	add $s2, $s2, -4 # Proximo elemento do vetor
-	addi $t2, $t2, 1 # Contador
+	add $s2, $s2, -4 		# Proximo elemento do vetor
+	addi $t2, $t2, 1 		# Contador
 	blt $t2, $s7, somarParesLoop
 	
 resultadoPares:
@@ -140,32 +156,30 @@ resultadoPares:
 	syscall
 	jr $ra
 
-# Letra C
-
 maior_menor:
-	add $s4, $zero, $zero # Reseta o numero de valores maiores que K e menores que 2k
-	li $t2, 0 # Reseta para ser o contador
-	move $s2, $s0 # $s2 vai ser o runner
+	add $s4, $zero, $zero 		# Reseta o numero de valores maiores que K e menores que 2k
+	li $t2, 0 			# Reseta para ser o contador
+	move $s2, $s0 			# $s2 vai ser o runner
 	la $a0, msgValorK
 	li $v0, 4
 	syscall
 	li $v0, 5
 	syscall
-	add $t5, $zero, $v0 # $t5 = K
-	mul $t6, $v0, 2    # $t6 = 2K
+	add $t5, $zero, $v0 		# $t5 = K
+	mul $t6, $v0, 2    		# $t6 = 2K
 	j loop_maior_menor
 
 loop_maior_menor:
 	
-	lw $t4, ($s2) # Carrega em $t4, o valor do endereco $s2
+	lw $t4, ($s2) 			# Carrega em $t4, o valor do endereco $s2
 	
-	sgt $t8, $t4, $t5 # vet[i] > k
-	slt $t9, $t4, $t6 # vet[i] < 2k
+	sgt $t8, $t4, $t5 		# vet[i] > k
+	slt $t9, $t4, $t6 		# vet[i] < 2k
 	
 	beqz $t8, return 
 	beqz $t9, return
 	
-	add $s4, $s4, 1 # S4 = numero de [k < valor < 2k]
+	add $s4, $s4, 1 		# S4 = numero de [k < valor < 2k]
 	add $s2, $s2, -4
 	addi $t2, $t2, 1
 	blt $t2, $s7, loop_maior_menor
@@ -201,27 +215,27 @@ return:
 	jr $ra
 	
 iguais:
-	add $s4, $zero, $zero # Reseta o numero de valores iguais a K
-	li $t2, 0 # Reseta para ser o contador
-	move $s2, $s0 # $s2 vai ser o runner
+	add $s4, $zero, $zero 		# Reseta o numero de valores iguais a K
+	li $t2, 0 			# Reseta para ser o contador
+	move $s2, $s0 			# $s2 vai ser o runner
 	la $a0, msgValorK
 	li $v0, 4
 	syscall
 	li $v0, 5
 	syscall
-	add $t5, $zero, $v0 # $t5 = K
+	add $t5, $zero, $v0 		# $t5 = K
 	j loop_iguais
 
 loop_iguais:
 
-	lw $t4, ($s2) # Carrega em $t4, o valor do endereco $s2
+	lw $t4, ($s2) 			# Carrega em $t4, o valor do endereco $s2
 	
-	seq $t8, $t4, $t5 # vet[i] == k
+	seq $t8, $t4, $t5 		# vet[i] == k
 	
 	beq $t8, 1, adicionar_igual
 	
-	add $s2, $s2, -4 # Andar endereco
-	addi $t2, $t2, 1 # Andar contador 
+	add $s2, $s2, -4 		# Andar endereco
+	addi $t2, $t2, 1 		# Andar contador 
 	blt $t2, $s7, loop_iguais
 	
 	move $v0, $s0
@@ -239,9 +253,9 @@ loop_iguais:
 	
 adicionar_igual:
 
-	add $s4, $s4, 1  # Aumentar numero de iguais
-	add $s2, $s2, -4 # Andar endereco
-	addi $t2, $t2, 1 # Andar contador 
+	add $s4, $s4, 1  		# Aumentar numero de iguais
+	add $s2, $s2, -4 		# Andar endereco
+	addi $t2, $t2, 1 		# Andar contador 
 	blt $t2, $s7, loop_iguais
 	move $v0, $s0
 	la $a0, msgNumeroIgual
@@ -255,3 +269,26 @@ adicionar_igual:
 	syscall
 	jr $ra
 	
+loopPerfeito:
+	
+	beq $s1, $t1, end
+	
+	div $t2, $t0, $t1
+	mfhi $k1
+	seq $t3, $k1, 0
+	
+	beq $t3, 1, somarPerfeito
+	
+	addi $t1, $t1, 1
+	
+	j loopPerfeito
+
+somarPerfeito:
+	
+	add $s0, $s0, $t1
+	addi $t1, $t1, 1
+	j loopPerfeito
+	
+end:
+	li $v0, 10
+	syscall
