@@ -4,6 +4,7 @@ msgAntes: .asciiz "Vetor original: "
 msgDepois: .asciiz "Vetor mudado: "
 msgInserirValores1: .asciiz "Insira o valor (inteiro!) de Vet["
 msgInserirValores2: .asciiz "]:"
+msgZeroErro: .asciiz "O valor informado deve ser maior do que 0!\n\n"
 msgShift: .asciiz "Insira o valor para o shift: "
 
 pulaLinha: .asciiz "\n"
@@ -26,10 +27,19 @@ array_size:
 	syscall
 	li $v0, 5
 	syscall
+	ble $v0, $zero, input_error 			# Se o input for menor ou igual a 0, repita o procedimento até receber um input válido
 	add $s7, $v0, $zero 				# $s7 vai segurar o valor do tamanho do vetor
 	add $k1, $zero, -4				# Multiplicador
 	mul $k0, $k1, $s7 				# $k0 vai segurar a quantidade de bytes a serem guardados para o vetor todo
+	j add_space
 	
+input_error :
+	
+	li $v0, 4 			# Imprimir strings
+	la $a0, msgZeroErro 		# Mensagem de erro N <= 0
+	syscall
+	j array_size
+
 add_space:
 
 	move $s0, $sp 					# $s0 = comeco do vetor

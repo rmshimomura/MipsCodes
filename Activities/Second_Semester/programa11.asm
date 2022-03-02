@@ -7,12 +7,12 @@
 	smallestMessage: "Smallest value of the array = "
 	biggestMessage: "Biggest value of the array = "
 	andMessage: " and it is on position: "
-	smallerPos: .word 0
-	biggerPos: .word 0
+	errorMessage: .asciiz "Size must be greater than 0!\n\n"
+	smallerPos: .word 1
+	biggerPos: .word 1
 .text
 
 main:
-	li $s6, 999999
 	jal array_size
 	jal result
 	li $v0, 10
@@ -25,8 +25,17 @@ array_size:
 	syscall
 	li $v0, 5
 	syscall
+	ble $v0, $zero, input_error 
 	add $s7, $v0, $zero 				# $s7 = array size
 	mul $k0, $s7, 4 				# $k0 = number of necessary bytes for the array
+	j allocate_space
+	
+input_error :
+	
+	li $v0, 4 			# Imprimir strings
+	la $a0, errorMessage 		# Mensagem de erro N <= 0
+	syscall
+	j array_size
 	
 allocate_space:
 	
@@ -57,6 +66,8 @@ array_read:
 	sw $v0, ($s2)
 	add $s2, $s2, 4
 	
+	beq $t2, 1, start
+	
 	bgt $v0, $s5, bigger
 	blt $v0, $s6, smaller
 
@@ -66,6 +77,11 @@ continue:
 	ble $t2, $s7, array_read
 	move $v0, $s0
 	jr $ra
+
+start: 
+	add $s6, $zero, $v0
+	add $s5, $zero, $v0
+	j continue
 
 bigger:
 

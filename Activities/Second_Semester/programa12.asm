@@ -7,6 +7,7 @@
 	msgInserirValores2A: .asciiz "]:"
 	msgInserirValores1B: .asciiz "Insira o valor (inteiro!) de VetB["
 	msgInserirValores2B: .asciiz "]:"
+	msgZeroErro: .asciiz "O valor informado deve ser maior do que 0!\n\n"
 	msgFinal: .asciiz "A soma dos elementos das posicoes pares de VetA subtraida da soma dos elementos impares de VetB = "
 	pulaLinha: .asciiz ".\n"
 	startC: .word 0
@@ -27,8 +28,17 @@ array_size:
 	syscall
 	li $v0, 5
 	syscall
+	ble $v0, $zero, input_error 			# Se o input for menor ou igual a 0, repita o procedimento até receber um input válido
 	add $s7, $v0, $zero 				# $s7 vai segurar o valor do tamanho do vetor
 	mul $k0, $s7, 4 				# $k0 vai segurar a quantidade de bytes a serem guardados para o vetor todo
+	j allocate_space_A
+
+input_error :
+	
+	li $v0, 4 			# Imprimir strings
+	la $a0, msgZeroErro 		# Mensagem de erro N <= 0
+	syscall
+	j array_size	
 
 allocate_space_A:
 	
