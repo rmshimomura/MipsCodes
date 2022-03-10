@@ -53,6 +53,8 @@ intercala:
 	check2:
 		lb $t4, 0($t2)
 		bne $t4, 10, save2
+		lb $t4, 0($t1)
+		bne $t4, 10, save1
 		j return
 		
 	save1:
