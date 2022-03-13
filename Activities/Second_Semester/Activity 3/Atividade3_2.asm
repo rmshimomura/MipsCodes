@@ -1,13 +1,12 @@
 .data
 
-ent: .asciiz "Insira a string 1: "
+ent: .asciiz "Insira a string: "
 str: .space 100
 str_trim: .space 100
 str_upper: .space 100
 str_rev: .space 100
 success: .asciiz "Palindromo!"
 failure: .asciiz "Nao palindromo!"
-
 
 resultado: .asciiz "Resultado final: "
 
@@ -18,10 +17,6 @@ main:
 	la $a1, str
 	jal leitura
 	jal format
-	
-#	la $a0, str_upper
-#	li $v0, 4
-#	syscall
 	
 	li $v0, 10
 	syscall 
@@ -45,7 +40,7 @@ format:
 	
 	move $s1, $t0 # $s1 tera o final da string original
 	
-	find_str_end:
+	find_str_end: # Achar final da string
 	
 		lb $t3, 0($t0)
 		move $s1, $t0
@@ -61,13 +56,33 @@ format:
 			
 			lb $t3, 0($t0)
 			beq $t3, 10, find_str_trim_end # Se igual a \n
-			bne $t3, 32, save_trim  # Se nao for igual a espaço, junte
-			add $t0, $t0, 1
+			bne $t3, 32, check_comma  # Se nao for igual a espaço, cheque por virgulas
+			add $t0, $t0, 1 # Ver proxima letra
 			j loop_trim
+			
+		check_comma: 
+		
+			bne $t3, 44, check_quotation # Se nao for igual a espaco, nem virgula, cheque por aspas
+			add $t0, $t0, 1 # Ver proxima letra
+			j loop_trim
+		
+		check_quotation:
+		
+			bne $t3, 34, check_point # Se nao for igual a espaco, nem virgula, nem aspas, cheque por ponto
+			add $t0, $t0, 1 # Ver proxima letra
+			j loop_trim
+			
+		check_point:
+		
+			bne $t3, 46, save_trim # Se nao for igual a espaco, nem virgula, nem aspas, nem ponto, salve
+			add $t0, $t0, 1 # Ver proxima letra
+			j loop_trim
+			
 		save_trim:
-			sb $t3, 0($t1)
-			add $t0, $t0, 1
-			add $t1, $t1, 1
+		
+			sb $t3, 0($t1)  # Salvar letra
+			add $t0, $t0, 1 # Ver proxima letra
+			add $t1, $t1, 1 # Ver proxima letra
 			j loop_trim
 			
 	find_str_trim_end:
@@ -76,11 +91,11 @@ format:
 		move $s2, $t1 # $s2 vai guardar o final da string trim
 		j find_str_trim_end_loop
 		
-	find_str_trim_end_loop:
+	find_str_trim_end_loop: # Achar final da string "limpa"
 	
 		lb $t3, 0($t1)
 		move $s2, $t1
-		beq $t3, 0, upper
+		beq $t3, 0, upper # Achou o final
 		add $t1, $t1, 1
 		j find_str_trim_end_loop
 	
@@ -91,12 +106,12 @@ format:
 		loop_upper:
 		
 			lb $t3, 0($t1)
-			bne $t3, 0, save_upper
+			bne $t3, 0, save_upper # Salvar letras maiusculas ate achar o final
 			j reverse
 			
 		save_upper:
 			
-			sge $t9, $t3, 97
+			sge $t9, $t3, 97 # Mudar para maiscula
 			
 			beq $t9, 1, raise
 			j back_save
@@ -117,7 +132,7 @@ reverse:
 	add $t4, $t4, -1
 	
 	loop:
-		seq $t7, $t4, $t6 
+		seq $t7, $t4, $t6 # Checar se letras sao iguais
 		beqz $t7, compare
 		j palindrome
 		
@@ -132,7 +147,9 @@ reverse:
 		add $t6, $t6, 1
 		add $t4, $t4, -1
 		
-		j loop
+		ble $t6, $t4, loop # Se passou da metade e nao achou nada diferente, pare
+		
+		j palindrome
 	
 palindrome:
 
