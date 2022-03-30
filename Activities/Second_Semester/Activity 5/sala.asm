@@ -13,6 +13,7 @@
     main:
 
         jal allocate_space
+        
         jal read_vector
 
         jal sort
@@ -40,15 +41,14 @@
         li $v0, 5 # Código de leitura de inteiro
         syscall # Leitura do valor (retorna em $v0)
         
-        sw $v0, vector_size # Armazena o tamanho do vetor
         add $s3, $zero, $v0
         mul $a0, $s3, 4 # Multiplica o valor lido por 4
+        
         li $v0, 9 # Código de alocação de memória
         syscall
         
-        sw $v0, vector_start # Armazena o endereço de memória alocado (do vetor)
 	add $s0, $s0, $v0
-        # Armazene o fim do vetor em vector_end
+       	
         add $v0, $v0, $a0
         add $s1, $zero, $v0 # fim
 
@@ -56,55 +56,60 @@
 
     save_half:
 
-        div $k0, $s3,2
+        div $k0, $s3, 2
+        add $t8, $zero, $s0 # Loop em $s0
         
         loop_save_half:
 
-            lw $t0, 0($s0)
+            lw $t0, 0($t8)
             sw $t0, 0($s4)
-            add $s0, $s0, 4
             add $s4, $s4, 4
+            add $t8, $t8, 4
             sub $k0, $k0, 1
             bnez $k0, loop_save_half
             jr $ra
 	
      save_second_half:
 
-        div $k0, $s3, 2
-        mul $k1, $k0, 4
-        add $t7, $s4, $s4
-        add $s0, $s0, $k1
-        add $s4, $s4, $k1
+	div $k0, $s3, 2
+        add $t9, $zero, $s4 # Metade do vetor resposta
         
         loop_save_second_half:
 
             lw $t0, ($s0)
-            sw $t0, 0($s4)
+            sw $t0, 0($t9)
             add $s0, $s0, 4
-            add $s4, $s4, 4
+            add $t9, $t9, 4
             sub $k0, $k0, 1
             bnez $k0, loop_save_second_half
+            div $k0, $s3, 2
+            mul $t5, $k0, -4
+            add $s4, $s4, $t5
             jr $ra
 	
     allocate_answer:
 
             
             mul $a0, $s3, 4 # Multiplica o valor lido por 4
+            
             li $v0, 9 # Código de alocação de memória
             syscall
             
-            add $s4, $s4, $v0 # $s4 comeco
+            add $s4, $zero, $v0 # $s4 comeco
+            add $s4, $s4, 4
             
-            add $v0, $v0, $a0
-            add $s5, $zero, $v0 # fim
+            mul $a0, $s3, 4 # Multiplica o valor lido por 4
+            
+            add $s5, $s4, $a0
+            
 
             jr $ra # Retorna para o main
 
     read_vector:
 
         add $t0, $zero, $zero
-        lw $t1, vector_size # Lê o tamanho do vetor
-        la $t2, vector_start # Lê o endereço de memória alocado (do vetor)
+
+        add $t2, $zero, $s0 # Lê o endereço de memória alocado (do vetor)
 
         loop_read:
 
@@ -126,15 +131,14 @@
             sw $v0, 0($t2) # Armazena o valor lido no vetor
             addi $t2, $t2, 4 # Incrementa o endereço de memória
             addi $t0, $t0, 1 # Incrementa o contador
-            blt $t0, $t1, loop_read # Verifica se o contador é menor que o tamanho do vetor
+            blt $t0, $s3, loop_read # Verifica se o contador é menor que o tamanho do vetor
             jr $ra # Retorna para o main
 
     print_vector:
 
         add $t0, $zero, $zero
-        lw $t1, vector_size # Lê o tamanho do vetor
+        add $t7, $zero, $s4
         
-
         loop_print:
 
             lw $a0, 0($t7) # Lê o valor do vetor
@@ -170,6 +174,7 @@
 
 
     reverse_sort: 
+    
 
     reverse_out_loop:
         add $t1, $zero, $zero
@@ -178,7 +183,7 @@
     reverse_inner_loop:
         lw  $t2, 0($a0)         	    # $t2 = elemento atual
         lw  $t3, 4($a0)         	    # $t3 = proximo elemento
-            sgt $t5, $t3, $t2       	# $t5 = 1 se $t3 < $t2
+            sgt $t5, $t3, $t2       	# $t5 = 1 se $t3 > $t2
             beq $t5, $zero, reverse_continue    # Se $t5 = 1, troca os valores
             add $t1, $zero, 1          	# Checar novamente
             sw  $t2, 4($a0)         	# Trocar
