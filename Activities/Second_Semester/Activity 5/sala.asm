@@ -3,6 +3,10 @@
     vector_start: .word 0
     vector_end:  .word 0
     vector_size: .word 0
+    
+    answer_start: .word 0
+    answer_end: .word 0
+    
     msg_vector_size_input: .asciiz "Entre com o tamanho do vetor: "
     msg_input_1: .asciiz "Entre com o valor Vet["
     msg_input_2: .asciiz "]: "
@@ -38,32 +42,35 @@
         li $v0, 4 # Escrita de string
         syscall
         
-        li $v0, 5 # Código de leitura de inteiro
+        li $v0, 5 # Codigo de leitura de inteiro
         syscall # Leitura do valor (retorna em $v0)
         
-        add $s3, $zero, $v0
-        mul $a0, $s3, 4 # Multiplica o valor lido por 4
+        sw $v0, vector_size
+        
+        mul $a0, $v0, 4 # Multiplica o valor lido por 4
         
         li $v0, 9 # Código de alocação de memória
         syscall
         
-	add $s0, $s0, $v0
+        sw $v0, vector_start
        	
         add $v0, $v0, $a0
-        add $s1, $zero, $v0 # fim
+        sw $v0, vector_end
 
         jr $ra # Retorna para o main
 
     save_half:
 
-        div $k0, $s3, 2
-        add $t8, $zero, $s0 # Loop em $s0
+        lw $t7, vector_size
+        div $k0, $t7, 2
+        lw $t8, vector_start
+        lw $t9, answer_start
         
         loop_save_half:
 
             lw $t0, 0($t8)
-            sw $t0, 0($s4)
-            add $s4, $s4, 4
+            sw $t0, 0($t9)
+            add $t9, $t9, 4
             add $t8, $t8, 4
             sub $k0, $k0, 1
             bnez $k0, loop_save_half
@@ -71,45 +78,45 @@
 	
      save_second_half:
 
-	div $k0, $s3, 2
-        add $t9, $zero, $s4 # Metade do vetor resposta
+        lw $t7, vector_size
+        div $k0, $t7, 2
+        lw $t4, vector_start
         
         loop_save_second_half:
 
-            lw $t0, ($s0)
+            lw $t0, ($t4)
             sw $t0, 0($t9)
-            add $s0, $s0, 4
+            add $t4, $t4, 4
             add $t9, $t9, 4
             sub $k0, $k0, 1
             bnez $k0, loop_save_second_half
-            div $k0, $s3, 2
-            mul $t5, $k0, -4
-            add $s4, $s4, $t5
             jr $ra
 	
     allocate_answer:
 
-            
-            mul $a0, $s3, 4 # Multiplica o valor lido por 4
+	    lw $t0, vector_size            
+            mul $a0, $t0, 4 # Multiplica o tamanho do vetor resposta por 4
             
             li $v0, 9 # Código de alocação de memória
             syscall
             
-            add $s4, $zero, $v0 # $s4 comeco
-            add $s4, $s4, 4
+            add $v0, $v0, 4 # Evitar invadir memoria
             
-            mul $a0, $s3, 4 # Multiplica o valor lido por 4
+            sw $v0, answer_start
             
-            add $s5, $s4, $a0
+            mul $a0, $t0, 4 # Multiplica o valor do tamanho do vetor por 4
             
+            add $v0, $v0, $a0 # Vai ate o final do vetor
+            
+            sw $v0, answer_end
 
             jr $ra # Retorna para o main
 
     read_vector:
 
         add $t0, $zero, $zero
-
-        add $t2, $zero, $s0 # Lê o endereço de memória alocado (do vetor)
+	lw $t1, vector_size
+        lw $t2, vector_start # Lê o endereço de memória alocado (do vetor)
 
         loop_read:
 
@@ -131,13 +138,14 @@
             sw $v0, 0($t2) # Armazena o valor lido no vetor
             addi $t2, $t2, 4 # Incrementa o endereço de memória
             addi $t0, $t0, 1 # Incrementa o contador
-            blt $t0, $s3, loop_read # Verifica se o contador é menor que o tamanho do vetor
+            blt $t0, $t1, loop_read # Verifica se o contador é menor que o tamanho do vetor
             jr $ra # Retorna para o main
 
     print_vector:
 
         add $t0, $zero, $zero
-        add $t7, $zero, $s4
+        lw $t7, answer_start
+        lw $t9, vector_size
         
         loop_print:
 
@@ -148,14 +156,15 @@
             addi $t7, $t7, 4 # Incrementa o endereço de memória
 
             addi $t0, $t0, 1 # Incrementa o contador
-            blt $t0, $s3, loop_print # Verifica se o contador é menor que o tamanho do vetor
+            blt $t0, $t9, loop_print # Verifica se o contador é menor que o tamanho do vetor
             jr $ra # Retorna para o main
 
     sort: 
 
     out_loop:
         add $t1, $zero, $zero
-        la  $a0, ($s0) 			        # $a0 esta no comeco do vetor
+        lw  $a0, vector_start 			        # $a0 esta no comeco do vetor
+        lw $t8, vector_end
         
     inner_loop:
         lw  $t2, 0($a0)         	    # $t2 = elemento atual
@@ -168,7 +177,7 @@
     continue:
         addi $a0, $a0, 4            	# Proximo elemento
         addi $a1, $a0, 4	     	# Proximo do proximo elemento
-        bne  $a1, $s1, inner_loop    	# Se o proximo elemento nao for o final, volta para o loop dentro
+        bne  $a1, $t8, inner_loop    	# Se o proximo elemento nao for o final, volta para o loop dentro
         bne  $t1, $zero, out_loop    	# Se $t1 = 1, volte para o out_loop
         jr $ra
 
@@ -178,7 +187,8 @@
 
     reverse_out_loop:
         add $t1, $zero, $zero
-        la  $a0, ($s0) 			        # $a0 esta no comeco do vetor
+        lw  $a0, vector_start 			        # $a0 esta no comeco do vetor
+        lw $t8, vector_end
         
     reverse_inner_loop:
         lw  $t2, 0($a0)         	    # $t2 = elemento atual
@@ -191,6 +201,6 @@
     reverse_continue:
         addi $a0, $a0, 4            	# Proximo elemento
         addi $a1, $a0, 4	     	# Proximo do proximo elemento
-        bne  $a1, $s1, reverse_inner_loop    	# Se o proximo elemento nao for o final, volta para o loop dentro
+        bne  $a1, $t8, reverse_inner_loop    	# Se o proximo elemento nao for o final, volta para o loop dentro
         bne  $t1, $zero, reverse_out_loop    	# Se $t1 = 1, volte para o out_loop
         jr $ra
