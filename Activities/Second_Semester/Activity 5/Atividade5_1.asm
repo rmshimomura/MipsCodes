@@ -5,6 +5,7 @@ erroTamanho: .asciiz "N nao pode ser maior do que 8!\n"
 Ent1: .asciiz "\nInsira o valor de Mat["
 Ent2: .asciiz "]["
 Ent3: .asciiz "]:"
+pulaLinha: .asciiz "\n\n"
 tamanhoDaMatriz: .word 0
 comecoDaMatriz: .word 0
 
@@ -16,6 +17,12 @@ main:
      	lw $a2, tamanhoDaMatriz # Número de colunas
       	jal leitura # leitura (mat, nlin, ncol)
       	move $a0, $v0 # Endereço da matriz lida
+      	
+      	li $v0, 4
+      	la $a0, pulaLinha
+      	syscall
+      	
+      	lw $a0, comecoDaMatriz
       	
       	jal escrita
       	
@@ -83,6 +90,17 @@ leitura: # leitura(matriz, nlinhas, ncolunas)
 		syscall # Leitura do valor (retorna em $v0)
 		
 		move $t2, $v0 # aux = valor lido
+		
+		add $t2, $t2, 3
+		bgt $t2, 122, maiusculas
+		bgt $t2, 90, minusculas
+		beq $t2, 90, fim
+		minusculas: 
+			bgt $t2, 96, fim
+		maiusculas:
+			sub $t2, $t2, 26
+		fim:
+		
 		jal indice # Calcula o endereço de mat [i] [j]
 		sb $t2, ($v0) # mat [i] [j] = aux
 		addi $t1, $t1, 1 # j++
@@ -103,7 +121,6 @@ escrita:
 	e: 
 		jal indice # Calcula o endereço de mat [i] [j]
    		lb $a0, ($v0) # Valor em mat [i] [j]
-   		add $a0, $a0, 3
    		li $v0, 11 # Código de impressão de char
    		syscall # Imprime mat [i] [j]
    		la $a0, 32 # Código ASCII para espaço
