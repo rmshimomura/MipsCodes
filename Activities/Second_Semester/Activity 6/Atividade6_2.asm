@@ -2,7 +2,7 @@
     buffer: .asciiz " "
     Arquivo: .asciiz "dados2.txt"
     Erro: .asciiz "Arquivo não encontrado!\n"
-    MaiorValor: .word 0
+    MaiorValor: .word -99999999
     MenorValor: .word 999999999
     NumeroDeElementosPares: .word 0
     NumeroDeElementosImpares: .word 0
