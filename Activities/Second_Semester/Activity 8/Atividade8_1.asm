@@ -5,8 +5,8 @@
 	time: .asciiz " vez.\n"
 	jump_line: .asciiz "\n"
 	n: .word 0
-	start_vector_inputs: .word 0 # Guarda todos os valores únicos colocados pelo usuário
-	start_vector_counts: .word 0 # Guarda o número de vezes que cada valor aparece
+	start_vector_inputs: .word 0 # Guarda todos os valores unicos colocados pelo usuario
+	start_vector_counts: .word 0 # Guarda o numero de vezes que cada valor aparece
 	
 .text
 
@@ -21,7 +21,7 @@
 	
 	sw $v0, n
 	
-	move $v1, $v0 # $v1 vai guardar o valor para que a multiplicação com o número de bytes
+	move $v1, $v0 # $v1 vai guardar o valor para que a multiplicacao com o numero de bytes
 	
 	mul $a0, $v1, 4 # N * 4 bytes por ser float
 	li $v0, 9
@@ -53,7 +53,7 @@
 	li $t0, 0
 	lw $t1, n
 	lw $s0, start_vector_inputs
-	li $k0, 0 # Número de valores não repetidos
+	li $k0, 0 # Numero de valores nao repetidos
 	
 	loop_input:
 	
@@ -85,12 +85,12 @@
 	
 	li $t9, 0 # Contador da posicao
 	
-	beqz %limit, end_dupes  # Número de valores inseridos até agora
+	beqz %limit, end_dupes  # Numero de valores inseridos ate agora
 	
 	loop_dupes:
 	
 		l.s $f1, ($s1)
-		c.eq.s $f1, %value # O número inserido é igual a algum já inserido?
+		c.eq.s $f1, %value # O numero inserido a igual a algum ja inserido?
 		bc1t add_dupe
 		bc1f continue_dupes
 		
