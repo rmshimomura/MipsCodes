@@ -1,26 +1,26 @@
 # Aluno: Rodrigo Mimura Shimomura 
 # Matrícula: 202000560249
-# 2) Dado um número natural n (maior ou igual a 10), verificar se n é palíndrome**.
+# 2) Dado um número natural n (maior ou igual a 10), verificar se n é palíndromo**.
 # ** Dizemos que um número natural n é palíndromo se o 1o algarismo de n é igual ao
 # seu último algarismo, o 2o algarismo de n é igual ao penúltimo algarismo, e assim
 # sucessivamente. Ex. 567765 é palíndromo.
 
 .data
-	entrada: .asciiz "Insira o n (máximo de 200.000 algarismos): "
-	fracasso: .asciiz "\nO número não é palindromo!\n"
-	sucesso: .asciiz "\nO número é palindromo!\n"
+	input: .asciiz "Insira o n (máximo de 200.000 algarismos, mínimo de 10 algarismos): "
+	failure: .asciiz "\nO número não é palindromo!\n"
+	success: .asciiz "\nO número é palindromo!\n"
 	n: .space 200000
-	tamanho_numero: .word 0
+	number_size: .word 0
 .text
 
 main:
-	jal leitura
-	jal encontrar_tamanho
+	jal reading
+	jal find_size
 	li $v0, 10
 	syscall
 	
-leitura:
-	la $a0, entrada # Endereço da string carregada para receber do usuário
+reading:
+	la $a0, input # Endereço da string carregada para receber do usuário
 	li $v0, 4 # Print string
 	syscall # syscall
 	la $a0, n # Endereço da string
@@ -29,35 +29,35 @@ leitura:
 	syscall  # Syscall
 	jr $ra # Voltar para main
 	
-encontrar_tamanho:
+find_size:
 
 	li $t0, 0 # Tamanho da string
 	la $s0, n # Endereço da string inputada
 	
-	loop_encontrar:
+	loop_find:
 	
 		lb $t1, ($s0)
 		
-	beq $t1, 10, fim_encontrar # Checar se o byte carregado no registrador é igual ao \n
+	beq $t1, 10, end_find # Checar se o byte carregado no registrador é igual ao \n
 	
 	add $t0, $t0, 1 # Aumenta o tamanho do número
 	
 	add $s0, $s0, 1 # Próximo byte
 	
-	j loop_encontrar
+	j loop_find
 	
-fim_encontrar:
+end_find:
 
 	rem $t1, $t0, 2 # Se tamanho % 2 == 1, o comprimento da string é ímpar, portanto não palíndromo
-	beq $t1, 1, nao_palindromo
-	sw $t0, tamanho_numero	 # Se tamanho % 2 == 0,, vá para o loop de checar se o número é palíndromo
+	beq $t1, 1, not_palindrome
+	sw $t0, number_size	 # Se tamanho % 2 == 0,, vá para o loop de checar se o número é palíndromo
 	j check_palindrome
 
 
 check_palindrome:
 
 	la $s0, n # Inicio do numero
-	lw $t0, tamanho_numero # Tamanho do numero
+	lw $t0, number_size # Tamanho do numero
 	add $s1, $s0, $t0 # Final do número (Início do número + tamanho do número = final)
 	add $s1, $s1, -1 # Voltar um espaço antes do \n
 	div $t1, $t0, 2 # Número máximo de iterações = tamanho da string / 2
@@ -68,7 +68,7 @@ check_palindrome:
 		lb $k0, ($s0)
 		lb $k1, ($s1)
 	
-		bne $k0, $k1, nao_palindromo # Comparação byte a byte do valor presente nas "duas pontas" do número
+		bne $k0, $k1, not_palindrome # Comparação byte a byte do valor presente nas "duas pontas" do número
 	
 		add $s0, $s0, 1 # Andar para frente
 		add $s1, $s1, -1 # Andar para trás
@@ -77,18 +77,18 @@ check_palindrome:
 	
 	blt $t2, $t1, loop_check_palindrome
 
-	j palindromo
+	j palindrome
 
-nao_palindromo:
+not_palindrome:
 
-	la $a0, fracasso
+	la $a0, failure
 	li $v0, 4
 	syscall
 	jr $ra
 	
-palindromo:
+palindrome:
 
-	la $a0, sucesso
+	la $a0, success
 	li $v0, 4
 	syscall
 	jr $ra
