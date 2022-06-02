@@ -1,3 +1,8 @@
+# Aluno: Rodrigo Mimura Shimomura 
+# Matricula: 202000560249
+# Elaborar um programa em MIPS que calcule o desvio padrão de um vetor v
+# contendo n = 10 números reais, onde m e a média do vetor.
+
 .data
 
 	vector: .word 0

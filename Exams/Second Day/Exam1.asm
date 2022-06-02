@@ -1,3 +1,8 @@
+# Aluno: Rodrigo Mimura Shimomura 
+# Matricula: 202000560249
+# Elaborar um programa em MIPS que leia os valores de n e p fornecidos pelo
+# usuário (teclado) e calcule o valor do arranjo.
+
 .data
 
 	enter_n: .asciiz "\nEntre com n:"
