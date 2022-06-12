@@ -46,8 +46,8 @@
 	
 	loop_results:
 	
-		rem $t1, $t0, $s0
-		rem $t2, $t0, $s1
+		rem $t1, $t0, $s0 # $t1 = $t0 % $s0
+		rem $t2, $t0, $s1 # $t2 = $t0 % $s1
 		
 		beq $t1, 0, check_both
 		beq $t2, 0, print_number # i % y == 0
@@ -61,15 +61,15 @@
 			
 		print_number:
 		
-			add $k0, $k0, 1
+			add $k0, $k0, 1 # $k0++
 		
-			move $a0, $t0
-			li $v0, 1
-			syscall
+			move $a0, $t0 # $a0 = $t0
+			li $v0, 1 # $v0 = 1
+			syscall # print $a0
 			
-			li $a0, 32
-			li $v0, 11
-			syscall
+			li $a0, 32 # $a0 = 32
+			li $v0, 11 # $v0 = 11
+			syscall # print "\n"
 			
 		continue:
 		

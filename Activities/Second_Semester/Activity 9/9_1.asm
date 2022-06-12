@@ -24,20 +24,20 @@
 
 	mul $a0, $t0, 4
 	li $v0, 9
-	syscall
+	syscall # Alocar espaço para o vetor
 	
 	sw $v0, start_v1
 	
 	mul $a0, $t0, 4
 	li $v0, 9
-	syscall
+	syscall # Alocar espaço para o vetor
 	
 	sw $v0, start_v2
 	
 	add $v0, $v0, $a0
 	add $v0, $v0, -4
 	
-	sw $v0, end_v2
+	sw $v0, end_v2 # end_v2 guarda o endereço do final do vetor
 
 	li $t1, 0
 	
@@ -62,7 +62,7 @@
 		li $v0, 5
 		syscall
 		
-		sw $v0, ($s0)
+		sw $v0, ($s0) # Guardar o valor do vetor
 		
 		add $s0, $s0, 4
 		
@@ -82,8 +82,8 @@
 	
 	loop_build:
 	
-		lw $t0, ($s0)
-		sw $t0, ($s1)
+		lw $t0, ($s0) # t0 guarda o valor do vetor original
+		sw $t0, ($s1) # t0 salva o valor do vetor original no inverso
 		
 		add $s0, $s0, 4
 		add $s1, $s1, -4
