@@ -32,8 +32,6 @@ str2: .asciiz "K elevado a N é: "
 	        li $v0,10
 		syscall
 	
-		jal power
-	
 	        power: 
 	        
 			bne $a1, $zero, recursion
@@ -50,13 +48,3 @@ str2: .asciiz "K elevado a N é: "
 			lw $ra, ($sp)
 			add $sp, $sp, 4
 			jr $ra
-		
-		move $s0,$v0
-        	la $a0,str2
-	        li $v0,4
-	        syscall
-	        move $a0,$s0
-	        li $v0,1
-	        syscall
-	        li $v0,10
-	        syscall	
